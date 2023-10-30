@@ -6,6 +6,8 @@ using EntityLayer.Response;
 using EntityLayer.Response.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
+using InformationTypeClass = EntityLayer.Response.InformationTypeClass;
 
 namespace AssessmentProject.Persons.Controllers
 {
@@ -205,15 +207,40 @@ namespace AssessmentProject.Persons.Controllers
             return response;
         }
 
-        [HttpGet("Persons")]
-        public GetAllPersonResponse GetAll()
+        [HttpGet("GetAll")]
+        public string GetAll()
         {
-            GetAllPersonResponse response = new()
+            List<GetAllPersonResponse> response = new();
+            var persons = _repositoryWrapper.PersonRepository.GetAllIncludeBy();
+            if (persons != null)
             {
-
-            };
-
-            return response;
+                foreach (var item in persons)
+                {
+                    var person = new GetAllPersonResponse()
+                    {
+                        Company = item.Company,
+                        Name = item.Name,
+                        SurName = item.SurName,
+                        InformationTypes = new()
+                    };
+                    if (item.Communications != null && item.Communications.Count > 0)
+                    {
+                        foreach (var itemCommunication in item.Communications)
+                        {
+                            person.InformationTypes.Add(new InformationTypeClass()
+                            {
+                                Id = itemCommunication.Id,
+                                InformationContent = itemCommunication.InformationContent,
+                                InformationType = ((byte)itemCommunication.InformationType)
+                            });
+                        }
+                    }
+                    response.Add(person);
+                }
+            }
+            return JsonSerializer.Serialize(response);
         }
+
+
     }
 }

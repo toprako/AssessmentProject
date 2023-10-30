@@ -16,6 +16,11 @@ namespace DataAccessLayer.Repository
         {
         }
 
+        public List<Person> GetAllIncludeBy()
+        {
+            return _context.Persons.Include(x => x.Communications).ToList();
+        }
+
         public Person GetByIdIncludeCommunication(Guid Id)
         {
             return _context.Persons.Include(x => x.Communications).Where(x => x.Id == Id).FirstOrDefault();

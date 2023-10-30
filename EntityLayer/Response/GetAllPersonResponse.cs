@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace EntityLayer.Response
 {
-    public class GetAllPersonResponse : BaseResponse
+    public class GetAllPersonResponse
     {
         public string Name { get; set; }
         public string SurName { get; set; }
@@ -16,6 +16,7 @@ namespace EntityLayer.Response
     }
     public class InformationTypeClass
     {
+        public Guid Id { get; set; }
         public byte? InformationType { get; set; }
         public string? InformationContent { get; set; }
     }

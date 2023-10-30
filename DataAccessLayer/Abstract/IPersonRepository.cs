@@ -10,5 +10,6 @@ namespace DataAccessLayer.Abstract
     public interface IPersonRepository : IGenericRepository<Person>
     {
         public Person GetByIdIncludeCommunication(Guid Id);
+        public List<Person> GetAllIncludeBy();
     }
 }
