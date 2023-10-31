@@ -7,11 +7,10 @@ using EntityLayer.Response.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using InformationTypeClass = EntityLayer.Response.InformationTypeClass;
 
 namespace AssessmentProject.Persons.Controllers
 {
-    [Route("[controller]")]
+    [Route("[controller]/[action]")]
     [ApiController]
     public class PersonController : ControllerBase
     {
@@ -22,6 +21,10 @@ namespace AssessmentProject.Persons.Controllers
             _repositoryWrapper = repositoryWrapper;
         }
 
+        /// <summary>
+        /// Yeni Bir Kullanıcı Eklemek İçin Oluşturulan Fonksiyondur.
+        /// Bir Kullanıcıya Birden Fazla İletişim Bilgisini de Eklememize yaramaktadır.
+        /// </summary>
         [HttpPost("AddPerson")]
         public BaseResponse AddPerson(AddPersonRequest request)
         {
@@ -80,6 +83,10 @@ namespace AssessmentProject.Persons.Controllers
             return response;
         }
 
+        /// <summary>
+        /// Bir Kullanıcıyı Silmek İçin Oluşturulmuştur.
+        /// ID Bilgisine Göre Silme İşlemini Gerçekleştirir.
+        /// </summary>
         [HttpPost("DeletePerson")]
         public BaseResponse DeletePerson(DeletePersonRequest request)
         {
@@ -124,6 +131,10 @@ namespace AssessmentProject.Persons.Controllers
             return response;
         }
 
+        /// <summary>
+        /// Var Olan Kullanıcıya İletişim Bilgisi Ekleme İşlemi İçin Yazılmıştır.
+        /// Request inde ise Id Bilgisine Göre İlgili Kullanıcı Bulunur ve İstenilen İletişim Bilgisi Eklenmektedir.
+        /// </summary>
         [HttpPost("AddPersonCommunication")]
         public BaseResponse AddPersonCommunication(AddPersonCommunicationRequest request)
         {
@@ -165,6 +176,9 @@ namespace AssessmentProject.Persons.Controllers
             return response;
         }
 
+        /// <summary>
+        /// Var Olan Kullanıcının İstenilen İletişim Bilgisini Silmek İçin Oluşturulmuştur.
+        /// </summary>
         [HttpPost("DeletePersonCommunication")]
         public BaseResponse DeletePersonCommunication(DeletePersonCommunicationRequest request)
         {
@@ -207,40 +221,92 @@ namespace AssessmentProject.Persons.Controllers
             return response;
         }
 
-        [HttpGet("GetAll")]
-        public string GetAll()
+        /// <summary>
+        /// Rehberdeki Tüm Kullanıcıları ve Bu Kullanıcıların İletişim Bilgilerini Getirmektedir.
+        /// </summary>
+        [HttpGet(Name = "GetAll")]
+        public IActionResult GetAll()
         {
             List<GetAllPersonResponse> response = new();
-            var persons = _repositoryWrapper.PersonRepository.GetAllIncludeBy();
-            if (persons != null)
+            try
             {
-                foreach (var item in persons)
+                var persons = _repositoryWrapper.PersonRepository.GetAllIncludeBy();
+                if (persons != null)
                 {
-                    var person = new GetAllPersonResponse()
+                    foreach (var item in persons)
                     {
-                        Company = item.Company,
-                        Name = item.Name,
-                        SurName = item.SurName,
-                        InformationTypes = new()
-                    };
-                    if (item.Communications != null && item.Communications.Count > 0)
-                    {
-                        foreach (var itemCommunication in item.Communications)
+                        var person = new GetAllPersonResponse()
                         {
-                            person.InformationTypes.Add(new InformationTypeClass()
+                            Company = item.Company,
+                            Name = item.Name,
+                            SurName = item.SurName,
+                            InformationTypes = new()
+                        };
+                        if (item.Communications != null && item.Communications.Count > 0)
+                        {
+                            foreach (var itemCommunication in item.Communications)
                             {
-                                Id = itemCommunication.Id,
-                                InformationContent = itemCommunication.InformationContent,
-                                InformationType = ((byte)itemCommunication.InformationType)
-                            });
+                                person.InformationTypes.Add(new()
+                                {
+                                    Id = itemCommunication.Id,
+                                    InformationContent = itemCommunication.InformationContent,
+                                    InformationType = ((byte)itemCommunication.InformationType)
+                                });
+                            }
                         }
+                        response.Add(person);
                     }
-                    response.Add(person);
                 }
             }
-            return JsonSerializer.Serialize(response);
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }          
+            return StatusCode(200, JsonSerializer.Serialize(response));
         }
 
+        /// <summary>
+        /// İlgili Kullanıcıya Göre Id Bilgisiyle Birlikte Kullanıcı Bilgilerini Ve İletişim Bilgilerini Getirmektedir.
+        /// </summary>
+        [HttpGet(Name = "GetByPerson")]
+        public IActionResult GetByPerson(string? Id)
+        {
+            GetByPersonResponse response = new();
+            try
+            {
+                if (Id == null || Guid.Parse(Id) == Guid.Empty)
+                {
+                    throw new ArgumentNullException("Id Alanı Boş Bırakılamaz.");
+                }
+                var person = _repositoryWrapper.PersonRepository.GetByIdIncludeCommunication(Guid.Parse(Id));
+                if (person is null)
+                {
+                    throw new ArgumentNullException("Kullanıcı Bulunamadı!");
+                }
+                response.Name = person.Name;
+                response.SurName = person.SurName;
+                response.Company = person.Company;
+                if (person.Communications != null && person.Communications.Count > 0)
+                {
+                    var tempList = new List<GetByPersonInformationType>();
+                    foreach (var item in person.Communications)
+                    {
+                        tempList.Add(new()
+                        {
+                            Id = item.Id,
+                            InformationContent = item.InformationContent,
+                            InformationType = ((byte)item.InformationType)
+                        });
+                    }
+                    response.InformationTypes = tempList;
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+            return StatusCode(200, JsonSerializer.Serialize(response));
+        }
 
     }
 }

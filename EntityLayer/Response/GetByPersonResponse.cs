@@ -1,5 +1,4 @@
-﻿using EntityLayer.Response.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace EntityLayer.Response
 {
-    public class GetAllPersonResponse
+    public class GetByPersonResponse
     {
         public string Name { get; set; }
         public string SurName { get; set; }
         public string Company { get; set; }
-        public List<GetAllPersonInformationType> InformationTypes { get; set; }
+        public List<GetByPersonInformationType> InformationTypes { get; set; }
     }
-    public class GetAllPersonInformationType
+    public class GetByPersonInformationType
     {
         public Guid Id { get; set; }
         public byte? InformationType { get; set; }
