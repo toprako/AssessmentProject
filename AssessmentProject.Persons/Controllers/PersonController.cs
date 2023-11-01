@@ -331,6 +331,10 @@ namespace AssessmentProject.Persons.Controllers
             thread.Start();
             return StatusCode(200, "İşlem Başarılı");
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
         private async Task PersonByLocalitionReportAsync(List<Person> person, Report reportData)
         {
             List<Tuple<string, double, double>> report = new();
