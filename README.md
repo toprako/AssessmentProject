@@ -63,3 +63,9 @@ Url Adresi => {url}/Person/GetByPerson?Id=43f85c5e-ed77-49e7-8bd6-8b09ae9f9f08
 
 # Rehberdeki Datalara Göre Rapor Oluşturuması 
 Url Adresi => {url}/Person/GetPersonByLocationReport
+
+# Tüm Raporları Çekmek İçin
+Url Adresi => {url}/Report/GetAllReportData
+
+# İlgili Raporu Çekmek için
+Url Adresi => {url}/Report/GetReport
