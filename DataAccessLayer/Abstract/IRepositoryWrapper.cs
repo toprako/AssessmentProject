@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace DataAccessLayer.Abstract
 {
-    public interface IRepositoryWrapper
+    public interface IRepositoryWrapper : IDisposable
     {
         IPersonRepository PersonRepository { get; }
         ICommunicationRepository CommunicationRepository { get; }
+        IReportRepository ReportRepository { get; }
         void Save();
     }
 }

@@ -22,7 +22,7 @@ namespace AssessmentProject.Test
         public void GetAllPerson_ReturnOK()
         {
             //Act
-            var okResult = _personController.GetAll();
+            var okResult = _personController.GetAllAsync();
 
             //Assert
             Assert.IsType<ObjectResult>(okResult);

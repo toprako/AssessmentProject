@@ -22,5 +22,6 @@ namespace DataAccessLayer.Concrete
 
         public DbSet<Person> Persons { get; set; }
         public DbSet<Communication> Communications { get; set; }
+        public DbSet<Report> Reports { get; set; }
     }
 }

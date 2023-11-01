@@ -9,10 +9,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace DataAccessLayer.Migrations
+namespace AssessmentProject.Persons.Migrations
 {
     [DbContext(typeof(RepositoryContext))]
-    [Migration("20231030210407_mig_init")]
+    [Migration("20231031184738_mig_init")]
     partial class mig_init
     {
         /// <inheritdoc />

@@ -4,6 +4,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.ConfigurePostgreSqlContext(builder.Configuration);
 builder.Services.ConfigureCors();
+builder.Services.ConfigureRabbitMq(builder.Configuration);
 builder.Services.ConfigureRepositoryWrapper();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -23,5 +24,6 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
 
 app.Run();

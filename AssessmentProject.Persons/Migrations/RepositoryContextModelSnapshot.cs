@@ -8,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace DataAccessLayer.Migrations
+namespace AssessmentProject.Persons.Migrations
 {
     [DbContext(typeof(RepositoryContext))]
     partial class RepositoryContextModelSnapshot : ModelSnapshot
@@ -64,6 +64,26 @@ namespace DataAccessLayer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Persons");
+                });
+
+            modelBuilder.Entity("EntityLayer.Concrete.Report", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ReportJson")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ReportStatus")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("RequestDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Reports");
                 });
 
             modelBuilder.Entity("EntityLayer.Concrete.Communication", b =>

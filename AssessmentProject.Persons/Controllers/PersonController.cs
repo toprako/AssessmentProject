@@ -1,9 +1,13 @@
 ﻿using DataAccessLayer.Abstract;
+using DataAccessLayer.Concrete;
+using DataAccessLayer.Repository;
 using EntityLayer.Concrete;
 using EntityLayer.Concrete.Enum;
+using EntityLayer.Concrete.ReportSql;
 using EntityLayer.Request;
 using EntityLayer.Response;
 using EntityLayer.Response.Common;
+using MassTransit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
@@ -15,17 +19,20 @@ namespace AssessmentProject.Persons.Controllers
     public class PersonController : ControllerBase
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
-
-        public PersonController(IRepositoryWrapper repositoryWrapper)
+        private readonly ILogger<PersonController> _logger;
+        private readonly IPublishEndpoint _publishEndpoint;
+        public PersonController(IRepositoryWrapper repositoryWrapper, ILogger<PersonController> logger, IPublishEndpoint publishEndpoint)
         {
             _repositoryWrapper = repositoryWrapper;
+            _logger = logger;
+            _publishEndpoint = publishEndpoint;
         }
 
         /// <summary>
         /// Yeni Bir Kullanıcı Eklemek İçin Oluşturulan Fonksiyondur.
         /// Bir Kullanıcıya Birden Fazla İletişim Bilgisini de Eklememize yaramaktadır.
         /// </summary>
-        [HttpPost("AddPerson")]
+        [HttpPost]
         public BaseResponse AddPerson(AddPersonRequest request)
         {
             BaseResponse response = new BaseResponse()
@@ -87,7 +94,7 @@ namespace AssessmentProject.Persons.Controllers
         /// Bir Kullanıcıyı Silmek İçin Oluşturulmuştur.
         /// ID Bilgisine Göre Silme İşlemini Gerçekleştirir.
         /// </summary>
-        [HttpPost("DeletePerson")]
+        [HttpPost]
         public BaseResponse DeletePerson(DeletePersonRequest request)
         {
             BaseResponse response = new()
@@ -135,7 +142,7 @@ namespace AssessmentProject.Persons.Controllers
         /// Var Olan Kullanıcıya İletişim Bilgisi Ekleme İşlemi İçin Yazılmıştır.
         /// Request inde ise Id Bilgisine Göre İlgili Kullanıcı Bulunur ve İstenilen İletişim Bilgisi Eklenmektedir.
         /// </summary>
-        [HttpPost("AddPersonCommunication")]
+        [HttpPost]
         public BaseResponse AddPersonCommunication(AddPersonCommunicationRequest request)
         {
             BaseResponse response = new()
@@ -179,7 +186,7 @@ namespace AssessmentProject.Persons.Controllers
         /// <summary>
         /// Var Olan Kullanıcının İstenilen İletişim Bilgisini Silmek İçin Oluşturulmuştur.
         /// </summary>
-        [HttpPost("DeletePersonCommunication")]
+        [HttpPost]
         public BaseResponse DeletePersonCommunication(DeletePersonCommunicationRequest request)
         {
             BaseResponse response = new()
@@ -261,7 +268,7 @@ namespace AssessmentProject.Persons.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
-            }          
+            }
             return StatusCode(200, JsonSerializer.Serialize(response));
         }
 
@@ -308,5 +315,82 @@ namespace AssessmentProject.Persons.Controllers
             return StatusCode(200, JsonSerializer.Serialize(response));
         }
 
+        [HttpGet(Name = "GetPersonByLocationReport")]
+        public IActionResult GetPersonByLocationReport()
+        {
+            Report report = new()
+            {
+                Id = Guid.NewGuid(),
+                ReportStatus = ReportStatusEnum.Hazırlanıyor.ToString(),
+                RequestDate = DateTime.UtcNow,
+            };
+            _repositoryWrapper.ReportRepository.Insert(report);
+            _repositoryWrapper.Save();
+            var person = _repositoryWrapper.PersonRepository.GetAllIncludeBy();
+            Thread thread = new(() => PersonByLocalitionReportAsync(person, report));
+            thread.Start();
+            return StatusCode(200, "İşlem Başarılı");
+        }
+        private async Task PersonByLocalitionReportAsync(List<Person> person, Report reportData)
+        {
+            List<Tuple<string, double, double>> report = new();
+            if (person != null && person.Count > 0)
+            {
+                var filterPerson = person.Where(x => x.Communications != null && x.Communications.Any(y => y.InformationType == CommunicationEnum.Localion || y.InformationType == CommunicationEnum.Telephone)).ToList();
+                if (filterPerson != null && filterPerson.Count > 0)
+                {
+                    foreach (var itemPerson in filterPerson)
+                    {
+                        if (itemPerson.Communications is null)
+                            continue;
+
+                        var Content = itemPerson.Communications.Where(x => x.InformationType == CommunicationEnum.Localion).FirstOrDefault()?.InformationContent;
+                        foreach (var item in itemPerson.Communications)
+                        {
+                            var index = report.FindIndex(x => x.Item1.Equals(Content));
+                            if (index > -1)
+                            {
+                                if (item.InformationType == CommunicationEnum.Localion)
+                                {
+                                    var tempReport = report[index];
+                                    report[index] = new(tempReport.Item1, tempReport.Item2 + 1, tempReport.Item3);
+                                }
+                                else
+                                {
+                                    var tempReport = report[index];
+                                    report[index] = new(tempReport.Item1, tempReport.Item2, tempReport.Item3 + 1);
+                                }
+                            }
+                            else
+                            {
+                                if (item.InformationType == CommunicationEnum.Localion)
+                                {
+                                    report.Add(new(Content, 1, 0));
+                                }
+                                else
+                                {
+                                    report.Add(new(Content, 0, 1));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            ReportSqlModel results = new()
+            {
+                Id = reportData.Id,
+                Detail = new()
+            };
+            foreach (var item in report)
+            {
+                results.Detail.Add(new ReportSqlModelDetail()
+                {
+                    InformationContent = item.Item1,
+                    PersonCount = item.Item2,
+                    PhoneCount = item.Item3
+                });
+            }
+            await _publishEndpoint.Publish(results);
+        }
     }
 }

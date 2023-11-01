@@ -10,22 +10,27 @@ namespace DataAccessLayer.Repository
 {
     public class RepositoryWrapper : IRepositoryWrapper
     {
-        private RepositoryContext _context;
+        private readonly RepositoryContext _context;
         private IPersonRepository _personRepository;
         private ICommunicationRepository _communicationRepository;
+        private IReportRepository _reportRepository;
 
-        public RepositoryWrapper(RepositoryContext context)
-        {
-            _context = context;
-        }
+        public RepositoryWrapper(RepositoryContext context) => _context = context;
 
         public IPersonRepository PersonRepository => _personRepository ??= new PersonRepository(_context);
 
         public ICommunicationRepository CommunicationRepository => _communicationRepository ??= new CommunicationRepository(_context);
 
+        public IReportRepository ReportRepository => _reportRepository ??= new ReportRepository(_context);
+
+        public void Dispose()
+        {
+
+        }
+
         public void Save()
         {
-            _context.SaveChanges(); 
+            _context.SaveChanges();
         }
     }
 }
