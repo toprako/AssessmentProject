@@ -276,12 +276,16 @@ namespace AssessmentProject.Persons.Controllers
         /// İlgili Kullanıcıya Göre Id Bilgisiyle Birlikte Kullanıcı Bilgilerini Ve İletişim Bilgilerini Getirmektedir.
         /// </summary>
         [HttpGet(Name = "GetByPerson")]
-        public IActionResult GetByPerson(string? Id)
+        public GetByPersonResponse GetByPerson(string? Id)
         {
-            GetByPersonResponse response = new();
+            GetByPersonResponse response = new()
+            {
+                Message = string.Empty,
+                Status = true
+            };
             try
             {
-                if (Id == null || Guid.Parse(Id) == Guid.Empty)
+                if (string.IsNullOrEmpty(Id) || Guid.Parse(Id) == Guid.Empty)
                 {
                     throw new ArgumentNullException("Id Alanı Boş Bırakılamaz.");
                 }
@@ -310,9 +314,10 @@ namespace AssessmentProject.Persons.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                response.Message = ex.Message;
+                response.Status = false;
             }
-            return StatusCode(200, JsonSerializer.Serialize(response));
+            return response;
         }
 
         [HttpGet(Name = "GetPersonByLocationReport")]

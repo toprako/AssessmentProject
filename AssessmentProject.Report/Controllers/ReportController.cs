@@ -7,6 +7,7 @@ using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
 using EntityLayer.Response;
+using System.Linq.Expressions;
 
 namespace AssessmentProject.Report.Controllers
 {
@@ -46,10 +47,10 @@ namespace AssessmentProject.Report.Controllers
                         response.Reports.Add(new()
                         {
                             Id = item.Id,
-                            ReportStatus = item.ReportStatus,
+                            ReportStatus = item.ReportStatus ?? string.Empty,
                             RequestDate = item.RequestDate,
-                            ReportDetail = JsonSerializer.Deserialize<List<ReportSqlModelDetail>>(item.ReportJson)
-                        });
+                            ReportDetail = !string.IsNullOrEmpty(item.ReportJson) ? JsonSerializer.Deserialize<List<ReportSqlModelDetail>>(item.ReportJson) ?? new List<ReportSqlModelDetail>() : new List<ReportSqlModelDetail>()
+                        }); ;
                     }
                 }
             }
@@ -64,7 +65,7 @@ namespace AssessmentProject.Report.Controllers
         /// İlgili Rapor ID sine Göre Raporu ve Rapor Detayını Getirmektedir.
         /// </summary>
         [HttpGet]
-        public GetReportResponse GetReport(Guid? Id)
+        public GetReportResponse GetReport(string Id)
         {
             GetReportResponse response = new()
             {
@@ -73,20 +74,21 @@ namespace AssessmentProject.Report.Controllers
             };
             try
             {
-                if (Id is null || Id == Guid.Empty)
+                Guid id = Guid.Empty;
+                if (string.IsNullOrEmpty(Id) || !Guid.TryParse(Id, out id))
                 {
                     _logger.LogInformation("Id Alanı Boş");
                     throw new ArgumentNullException("Id Alanı Boş");
                 }
-                var report = _repositoryWrapper.ReportRepository.GetById(Id ?? Guid.Empty);
+                var report = _repositoryWrapper.ReportRepository.GetById(id);
                 if (report is null)
                 {
                     throw new ArgumentNullException("Rapor Bulunamadı");
                 }
                 response.Id = report.Id;
-                response.ReportStatus = report.ReportStatus;
+                response.ReportStatus = report.ReportStatus ?? string.Empty;
                 response.RequestDate = report.RequestDate;
-                response.ReportDetail = JsonSerializer.Deserialize<List<ReportSqlModelDetail>>(report.ReportJson);
+                response.ReportDetail = !string.IsNullOrEmpty(report.ReportJson) ? JsonSerializer.Deserialize<List<ReportSqlModelDetail>>(report.ReportJson) ?? new List<ReportSqlModelDetail>() : new List<ReportSqlModelDetail>();
             }
             catch (Exception ex)
             {

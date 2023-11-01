@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EntityLayer.Response.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace EntityLayer.Response
 {
-    public class GetByPersonResponse
+    public class GetByPersonResponse : BaseResponse
     {
         public string Name { get; set; }
         public string SurName { get; set; }
