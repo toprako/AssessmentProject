@@ -2,6 +2,8 @@
 Bu Bir Örnek Projedir.
 Bir Rehber Uygulaması Bu Uygulamada Rehbere Kişi Ekleme, Rehberden Kişi Silme, Rehberdeki Kişiye Bağlı İletişim Bilgisini Ekleme, Rehberdeki Kişiye Bağlı İletişim Bilgisini Kaldırma ve buna bağlı bir rapor oluşturmaktadır. Raporda Konum Bilgisi , O konumda yer alan rehbere kayıtlı kişi sayısı , O konumda yer alan rehbere kayıtlı telefon numarası sayısı elde edilmektedir.
 
+# PostgreSql backup
+Dosyaların arasında "projectbackup.sql" olan dosya veri tabanının yedeğini barındırmaktadır.
 
 # Ön Koşullar
 Projeyi Çalıştırmadan Önce RabbitMq servisi çalıştırmak ve çalışır halde olmak zorundadır. Database Olarak Postgresql kullanılmış ve adres bilgilerini appconfig.json datasından değiştirerek bağlantı sağlanabilir. Veritabanı Migration işlemleri için Person Projesini "Set As Startup Project" Olarak Seçiniz ve Package Manager Console Üzerinden "update-database" yazılarak veritabanı aktarımı sağlanmaktadır.
