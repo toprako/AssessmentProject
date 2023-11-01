@@ -15,7 +15,7 @@ namespace AssessmentProject.Test
 {
     public class UnitReportTest
     {
-        #region Varaible
+        #region Variable
         private readonly ReportController _controller;
         #endregion
 

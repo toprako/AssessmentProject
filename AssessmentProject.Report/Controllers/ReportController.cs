@@ -16,7 +16,7 @@ namespace AssessmentProject.Report.Controllers
     public class ReportController : ControllerBase
     {
 
-        #region Varaible
+        #region Variable
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly ILogger<ReportController> _logger;
         #endregion

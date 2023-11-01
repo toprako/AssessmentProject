@@ -14,7 +14,7 @@ namespace AssessmentProject.Test
 {
     public class UnitPersonTest
     {
-        #region Varaible
+        #region Variable
         private readonly PersonController _personController;
         #endregion
 
