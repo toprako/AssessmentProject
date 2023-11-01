@@ -205,15 +205,15 @@ namespace AssessmentProject.Persons.Controllers
                     throw new ArgumentNullException("İletişim Id Alanı Boş Bırakılamaz");
                 }
                 var person = _repositoryWrapper.PersonRepository.GetByIdIncludeCommunication(request.Id ?? Guid.Empty);
-                if (person != null)
+                if (person != null && person.Communications != null)
                 {
-                    var communication = person.Communications.Where(c => c.Id == request.CommunicationId).FirstOrDefault();
+                    var communication = person.Communications.FirstOrDefault(c => c.Id == request.CommunicationId);
                     if (communication != null)
                     {
                         person.Communications.Remove(communication);
-                    }
-                    _repositoryWrapper.CommunicationRepository.Delete(communication);
-                    _repositoryWrapper.Save();
+                        _repositoryWrapper.CommunicationRepository.Delete(communication);
+                        _repositoryWrapper.Save();
+                    }                   
                 }
                 else
                 {
@@ -232,7 +232,7 @@ namespace AssessmentProject.Persons.Controllers
         /// Rehberdeki Tüm Kullanıcıları ve Bu Kullanıcıların İletişim Bilgilerini Getirmektedir.
         /// </summary>
         [HttpGet(Name = "GetAll")]
-        public IActionResult GetAll()
+        public List<GetAllPersonResponse> GetAll()
         {
             List<GetAllPersonResponse> response = new();
             try
@@ -244,7 +244,7 @@ namespace AssessmentProject.Persons.Controllers
                     {
                         var person = new GetAllPersonResponse()
                         {
-                            Company = item.Company,
+                            Company = item.Company ?? string.Empty,
                             Name = item.Name,
                             SurName = item.SurName,
                             InformationTypes = new()
@@ -267,9 +267,9 @@ namespace AssessmentProject.Persons.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                _logger.LogError(ex, ex.Message);
             }
-            return StatusCode(200, JsonSerializer.Serialize(response));
+            return response;
         }
 
         /// <summary>
@@ -296,7 +296,7 @@ namespace AssessmentProject.Persons.Controllers
                 }
                 response.Name = person.Name;
                 response.SurName = person.SurName;
-                response.Company = person.Company;
+                response.Company = person.Company ?? string.Empty;
                 if (person.Communications != null && person.Communications.Count > 0)
                 {
                     var tempList = new List<GetByPersonInformationType>();
@@ -353,7 +353,7 @@ namespace AssessmentProject.Persons.Controllers
                         if (itemPerson.Communications is null)
                             continue;
 
-                        var Content = itemPerson.Communications.Where(x => x.InformationType == CommunicationEnum.Localion).FirstOrDefault()?.InformationContent;
+                        var Content = itemPerson.Communications.Where(x => x.InformationType == CommunicationEnum.Localion).FirstOrDefault()?.InformationContent ?? string.Empty;
                         foreach (var item in itemPerson.Communications)
                         {
                             var index = report.FindIndex(x => x.Item1.Equals(Content));

@@ -3,6 +3,7 @@ using Castle.Core.Logging;
 using DataAccessLayer.Abstract;
 using EntityLayer.Concrete.Enum;
 using EntityLayer.Request;
+using EntityLayer.Response;
 using EntityLayer.Response.Common;
 using FakeItEasy;
 using MassTransit;
@@ -33,7 +34,7 @@ namespace AssessmentProject.Test
             var okResult = _personController.GetAll();
 
             //Assert
-            Assert.IsType<ObjectResult>(okResult);
+            Assert.IsType<List<GetAllPersonResponse>>(okResult);
         }
 
 
