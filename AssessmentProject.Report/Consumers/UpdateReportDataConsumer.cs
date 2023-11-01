@@ -23,9 +23,9 @@ namespace AssessmentProject.Report.Consumers
                 {
                     report.ReportJson = JsonSerializer.Serialize(reportModel.Detail);
                     report.ReportStatus = ReportStatusEnum.Tamamlandı.ToString();
-                }
-                _repositoryWrapper.ReportRepository.Update(report);
-                _repositoryWrapper.Save();
+                    _repositoryWrapper.ReportRepository.Update(report);
+                    _repositoryWrapper.Save();
+                }               
             }
         }
     }
