@@ -1,4 +1,4 @@
-using AssessmentProject.Persons.Controllers;
+ï»¿using AssessmentProject.Persons.Controllers;
 using Castle.Core.Logging;
 using DataAccessLayer.Abstract;
 using EntityLayer.Concrete.Enum;
@@ -37,7 +37,6 @@ namespace AssessmentProject.Test
             Assert.IsType<List<GetAllPersonResponse>>(okResult);
         }
 
-
         [Fact]
         public void AddPersonTest_ReturnCreatedResponse()
         {
@@ -56,12 +55,11 @@ namespace AssessmentProject.Test
         }
 
         [Fact]
-        public void AddPersonTest_ReturnErrorResponse()
+        public void AddPersonTest_ReturnNameErrorResponse()
         {
             //Arrange 
             var person = new AddPersonRequest()
             {
-                Name = null,
                 SurName = "Test"
             };
 
@@ -71,6 +69,49 @@ namespace AssessmentProject.Test
             //Assert
             Assert.NotNull(_createdResponse.Message);
         }
+
+        [Fact]
+        public void AddPersonTest_ReturnSurNameErrorResponse()
+        {
+            //Arrange 
+            var person = new AddPersonRequest()
+            {
+                Name = "Test"
+            };
+
+            //Act
+            var _createdResponse = _personController.AddPerson(person);
+
+            //Assert
+            Assert.NotNull(_createdResponse.Message);
+        }
+
+        [Fact]
+        public void AddPersonTestInformationTypeNull_ReturnOkResponse()
+        {
+            //Arrange 
+            var person = new AddPersonRequest()
+            {
+                Name = "Test",
+                SurName = "Test",
+                InformationTypes = new List<InformationTypeClass>()
+                {
+                    new()
+                    {
+                        InformationContent = "Ä°stanbul",
+                    },
+                },
+            };
+
+            //Act
+            var _createdResponse = _personController.AddPerson(person);
+
+            //Assert
+            Assert.Equal(string.Empty, _createdResponse.Message);
+            Assert.True(_createdResponse.Status);
+        }
+
+
 
         [Fact]
         public void DeletePersonTest_ReturnErrorResponse()
@@ -111,7 +152,7 @@ namespace AssessmentProject.Test
             var communication = new AddPersonCommunicationRequest()
             {
                 Id = null,
-                InformationContent = "Ýstanbul",
+                InformationContent = "Ä°stanbul",
                 InformationType = (byte)CommunicationEnum.Localion
             };
 
@@ -129,7 +170,7 @@ namespace AssessmentProject.Test
             var communication = new AddPersonCommunicationRequest()
             {
                 Id = Guid.NewGuid(),
-                InformationContent = "Ýstanbul",
+                InformationContent = "ï¿½stanbul",
                 InformationType = (byte)CommunicationEnum.Localion
             };
 
@@ -141,13 +182,46 @@ namespace AssessmentProject.Test
         }
 
         [Fact]
-        public void DeletePersonCommunication_ReturnErrorResponse()
+        public void DeletePersonCommunication_ReturnCommunicationErrorResponse()
         {
             //Arrange
             var communication = new DeletePersonCommunicationRequest()
             {
                 Id = Guid.NewGuid(),
                 CommunicationId = null
+            };
+
+            //Act
+            var deleteResponse = _personController.DeletePersonCommunication(communication);
+
+            //Assert
+            Assert.False(deleteResponse.Status);
+            Assert.NotNull(deleteResponse.Message);
+        }
+
+        [Fact]
+        public void DeletePersonCommunication_ReturnPersonIdErrorResponse()
+        {
+            //Arrange
+            var communication = new DeletePersonCommunicationRequest()
+            {
+                CommunicationId = Guid.NewGuid()
+            };
+
+            //Act
+            var deleteResponse = _personController.DeletePersonCommunication(communication);
+
+            //Assert
+            Assert.False(deleteResponse.Status);
+            Assert.NotNull(deleteResponse.Message);
+        }
+
+        [Fact]
+        public void DeletePersonCommunication_ReturnPersonIdAndCommunicationIdErrorResponse()
+        {
+            //Arrange
+            var communication = new DeletePersonCommunicationRequest()
+            {
             };
 
             //Act
@@ -177,6 +251,27 @@ namespace AssessmentProject.Test
         }
 
         [Fact]
+        public void DeletePersonCommunication_ReturnErrorNullRepositoryResponse()
+        {
+            //Arrange
+            var logger = A.Fake<ILogger<PersonController>>();
+            var publish = A.Fake<IPublishEndpoint>();
+            var personController = new PersonController(null, logger, publish);
+            var communication = new DeletePersonCommunicationRequest()
+            {
+                Id = Guid.NewGuid(),
+                CommunicationId = Guid.NewGuid()
+            };
+
+            //Act
+            var deleteResponse = personController.DeletePersonCommunication(communication);
+
+            //Assert
+            Assert.False(deleteResponse.Status);
+            Assert.NotEqual(string.Empty, deleteResponse.Message);
+        }
+
+        [Fact]
         public void GetByPerson_ReturnOkResponse()
         {
             //Arrange 
@@ -203,6 +298,16 @@ namespace AssessmentProject.Test
             //Assert
             Assert.False(GetByPersonResponse.Status);
             Assert.NotEqual(string.Empty, GetByPersonResponse.Message);
+        }
+
+        [Fact]
+        public void GetPersonByLocationReport_Return200Response()
+        {
+            //Act
+            var GetPersonByLocationReport = _personController.GetPersonByLocationReport();
+
+            //Assert
+            Assert.IsType<ObjectResult>(GetPersonByLocationReport);
         }
 
     }

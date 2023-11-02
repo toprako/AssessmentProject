@@ -37,6 +37,16 @@ namespace AssessmentProject.Test
         }
 
         [Fact]
+        public void GetAllReportData_ReturnEmptyListResponse()
+        {
+            //Act
+            var okResult = _controller.GetAllReportData();
+
+            //Assert
+            Assert.Empty(okResult.Reports);
+        }
+
+        [Fact]
         public void GetReportData_ReturnOkResponse()
         {
             //Arrange 
@@ -55,6 +65,20 @@ namespace AssessmentProject.Test
         {
             //Arrange 
             string id = "";
+
+            //Act
+            var GetReportResponse = _controller.GetReport(id);
+
+            //Assert
+            Assert.False(GetReportResponse.Status);
+            Assert.NotEqual(string.Empty, GetReportResponse.Message);
+        }
+
+        [Fact]
+        public void GetReportData_ReturnNotGuidIdResponse()
+        {
+            //Arrange 
+            string id = "test";
 
             //Act
             var GetReportResponse = _controller.GetReport(id);
